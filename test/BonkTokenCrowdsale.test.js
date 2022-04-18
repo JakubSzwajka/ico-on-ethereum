@@ -27,6 +27,7 @@ contract('BonkTokenCrowdsale', function ([_, wallet, investor_1, investor_2]) {
         this.rate = new BN(1000);
         this.wallet = wallet;
         this.cap = ether("100");
+        this.goal = ether("50")
 
         this.investorMinCap = ether("0.002");
         this.investorHardCap = ether("50");
@@ -40,7 +41,8 @@ contract('BonkTokenCrowdsale', function ([_, wallet, investor_1, investor_2]) {
             this.token.address,
             this.cap,
             this.openingTime, 
-            this.closingTime
+            this.closingTime,
+            this.goal
         );
 
         await this.crowdsale.addWhitelisted(investor_1);
@@ -99,8 +101,13 @@ contract('BonkTokenCrowdsale', function ([_, wallet, investor_1, investor_2]) {
         describe('when the contribution is less then the minimum cap', function () {
             it('rejects the transaction', async function () {
                 const value = this.investorMinCap - 1; 
-                await expectRevert(this.crowdsale.buyTokens(investor_2, { value: value, from: investor_2 })
-                ,'Total contribution too low'); 
+                await expectRevert.unspecified(this.crowdsale.buyTokens(
+                    investor_2,
+                    {
+                        value: value,
+                        from: investor_2
+                    }
+                )); 
             });
         });
 
@@ -141,13 +148,13 @@ contract('BonkTokenCrowdsale', function ([_, wallet, investor_1, investor_2]) {
                 );
                 
                 const contributionToExceedHardCap = ether("49");
-                await expectRevert(this.crowdsale.buyTokens(
+                await expectRevert.unspecified(this.crowdsale.buyTokens(
                     investor_1,
                     {
                         value: contributionToExceedHardCap,
                         from: investor_1
                     }
-                ), 'Total contribution exceeded'); 
+                )); 
             });
         });
 
@@ -178,13 +185,33 @@ contract('BonkTokenCrowdsale', function ([_, wallet, investor_1, investor_2]) {
             it('rejects contributions fron non-whitelisted investors', async function () {   
 
                 const non_whitelist_investor = _; 
-                await expectRevert(this.crowdsale.buyTokens(
+                await expectRevert.unspecified(this.crowdsale.buyTokens(
                     non_whitelist_investor,
                     {
                         value: ether("1"),
                         from: non_whitelist_investor
                     }
-                ), "WhitelistCrowdsale: beneficiary doesn't have the Whitelisted role");
+                ));
+            });
+        });
+
+        describe('refundable crowdsale', function () {
+            beforeEach(async function () {
+                await this.crowdsale.buyTokens(
+                    investor_1, 
+                    {
+                        from: investor_1, 
+                        value: ether("1")
+                    }
+               ) 
+            });
+
+            describe('during crowdsale', function () {
+                it('prevents the investor from claiming refund', async function () {
+                    await expectRevert.unspecified(this.crowdsale.claimRefund(
+                        investor_1
+                    )); 
+                }); 
             });
         });
     });
