@@ -24,7 +24,7 @@
     "lodash.zip": "^4.2.0",
     "merkletreejs": "^0.2.13",
     "micromatch": "^4.0.2",
-    "openzeppelin-solidity": "^4.5.0",
+    "openzeppelin-solidity": "4.5.0",
     "prettier": "^2.3.0",
     "prettier-plugin-solidity": "^1.0.0-beta.16",
     "rimraf": "^3.0.2",
