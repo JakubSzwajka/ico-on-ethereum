@@ -5,12 +5,13 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/crowdsale/Crowdsale.sol";
 import "@openzeppelin/contracts/crowdsale/emission/MintedCrowdsale.sol"; 
 import "@openzeppelin/contracts/crowdsale/validation/CappedCrowdsale.sol"; 
+import "@openzeppelin/contracts/crowdsale/validation/TimedCrowdsale.sol"; 
 
 
 // min amount of investor contribution - 0.002 Ether
 // max amount of investor contribution - 50 Ether
 
-contract BonkTokenCrowdsale is Crowdsale, MintedCrowdsale, CappedCrowdsale {
+contract BonkTokenCrowdsale is Crowdsale, MintedCrowdsale, CappedCrowdsale, TimedCrowdsale{
 
 
     uint256 public investorMinCap = 2000000000000000; // 0.002 ETH
@@ -22,14 +23,16 @@ contract BonkTokenCrowdsale is Crowdsale, MintedCrowdsale, CappedCrowdsale {
         uint256 _rate, 
         address payable _wallet, 
         IERC20 _token,
-        uint256 _cap
+        uint256 _cap,
+        uint256 _openingTime, 
+        uint256 _closingTime
     )
     Crowdsale(_rate, _wallet, _token)
     CappedCrowdsale(_cap)
+    TimedCrowdsale(_openingTime, _closingTime)
     public 
     {
     }
-
     /**
     * @dev Returns the amout contributed so far by a specific user.
     * @param _beneficiary Address of contributor

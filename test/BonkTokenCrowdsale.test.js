@@ -1,6 +1,6 @@
 
 
-const { BN, ether, expectRevert} = require('@openzeppelin/test-helpers')
+const { BN, ether, expectRevert, time} = require('@openzeppelin/test-helpers')
 const { expect } = require('chai');
 
 const BonkToken = artifacts.require("BonkToken")
@@ -32,27 +32,34 @@ contract('BonkTokenCrowdsale', function ([_, wallet, investor_1, investor_2]) {
         this.investorMinCap = ether("0.002");
         this.investorHardCap = ether("50");
 
+        this.openingTime = +await time.latest() + +time.duration.days(1); 
+        this.closingTime = this.openingTime + +time.duration.weeks(1);
+
         this.crowdsale = await BonkTokenCrowdsale.new(
             this.rate,
             this.wallet,
             this.token.address,
-            this.cap
+            this.cap,
+            this.openingTime, 
+            this.closingTime
         );
         
         await this.token.addMinter(this.crowdsale.address);
         await this.token.transferOwnership(this.crowdsale.address);
+
+        await time.increase(time.duration.days(2))
     });
 
     describe('crowdsale', function () {
         
         it('tracks the rate', async function () {
             expect(await this.crowdsale.rate()).
-            to.be.bignumber.equal(this.rate);
+                to.be.bignumber.equal(this.rate);
         });
         
-        it('track the rate', async function () {
+        it('tracks the wallet', async function () {
             expect(await this.crowdsale.wallet()).
-            to.equal(this.wallet);
+                to.equal(this.wallet);
         });
         
         it('tracks the token', async function () {
@@ -155,6 +162,14 @@ contract('BonkTokenCrowdsale', function ([_, wallet, investor_1, investor_2]) {
                 const contribution = await this.crowdsale.getUserContribution(investor_1);
                 contribution.should.be.bignumber.equal(ether("2"))
             });
+        });
+
+
+        describe('timed crowdsale', function () {
+            it('is open', async function () {
+                const isClosed = await this.crowdsale.hasClosed(); 
+                isClosed.should.be.false; 
+            }); 
         });
     });
 });
