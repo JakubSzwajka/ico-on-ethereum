@@ -6,12 +6,19 @@ import "@openzeppelin/contracts/crowdsale/Crowdsale.sol";
 import "@openzeppelin/contracts/crowdsale/emission/MintedCrowdsale.sol"; 
 import "@openzeppelin/contracts/crowdsale/validation/CappedCrowdsale.sol"; 
 import "@openzeppelin/contracts/crowdsale/validation/TimedCrowdsale.sol"; 
+import "@openzeppelin/contracts/crowdsale/validation/WhitelistCrowdsale.sol"; 
 
 
 // min amount of investor contribution - 0.002 Ether
 // max amount of investor contribution - 50 Ether
 
-contract BonkTokenCrowdsale is Crowdsale, MintedCrowdsale, CappedCrowdsale, TimedCrowdsale{
+contract BonkTokenCrowdsale is 
+    Crowdsale, 
+    MintedCrowdsale, 
+    CappedCrowdsale, 
+    TimedCrowdsale,
+    WhitelistCrowdsale
+    {
 
 
     uint256 public investorMinCap = 2000000000000000; // 0.002 ETH

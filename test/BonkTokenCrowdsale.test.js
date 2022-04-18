@@ -2,7 +2,6 @@
 
 const { BN, ether, expectRevert, time} = require('@openzeppelin/test-helpers')
 const { expect } = require('chai');
-
 const BonkToken = artifacts.require("BonkToken")
 const BonkTokenCrowdsale = artifacts.require("BonkTokenCrowdsale")
 
@@ -13,7 +12,7 @@ require('chai')
 contract('BonkTokenCrowdsale', function ([_, wallet, investor_1, investor_2]) {
     
     beforeEach(async function () {
-
+        // token config
         this.name = 'BonkToken';
         this.symbol = 'BNK';
         this.decimals = new BN(18);
@@ -24,7 +23,7 @@ contract('BonkTokenCrowdsale', function ([_, wallet, investor_1, investor_2]) {
             this.decimals
         );
 
-
+        // Crowdsale config
         this.rate = new BN(1000);
         this.wallet = wallet;
         this.cap = ether("100");
@@ -43,7 +42,10 @@ contract('BonkTokenCrowdsale', function ([_, wallet, investor_1, investor_2]) {
             this.openingTime, 
             this.closingTime
         );
-        
+
+        await this.crowdsale.addWhitelisted(investor_1);
+        await this.crowdsale.addWhitelisted(investor_2);
+
         await this.token.addMinter(this.crowdsale.address);
         await this.token.transferOwnership(this.crowdsale.address);
 
@@ -170,6 +172,20 @@ contract('BonkTokenCrowdsale', function ([_, wallet, investor_1, investor_2]) {
                 const isClosed = await this.crowdsale.hasClosed(); 
                 isClosed.should.be.false; 
             }); 
+        });
+
+        describe('whitelisted crowdsale', function () {
+            it('rejects contributions fron non-whitelisted investors', async function () {   
+
+                const non_whitelist_investor = _; 
+                await expectRevert(this.crowdsale.buyTokens(
+                    non_whitelist_investor,
+                    {
+                        value: ether("1"),
+                        from: non_whitelist_investor
+                    }
+                ), "WhitelistCrowdsale: beneficiary doesn't have the Whitelisted role");
+            });
         });
     });
 });
